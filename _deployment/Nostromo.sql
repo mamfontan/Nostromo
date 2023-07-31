@@ -1,0 +1,241 @@
+SET XACT_ABORT ON
+BEGIN TRY
+	BEGIN TRANSACTION 
+
+	/* START Table structure change scripts */
+	
+	/* ..... */
+
+	/* FIN Table structure change scripts */
+
+	PRINT N'Nostromo Structure executed.';
+	COMMIT TRANSACTION
+	PRINT N'Nostromo Structure committed.';	
+	
+END TRY
+BEGIN CATCH
+	IF @@TRANCOUNT > 0
+		ROLLBACK TRAN 
+		
+	DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE()
+	DECLARE @ErrorSeverity INT = ERROR_SEVERITY()
+	DECLARE @ErrorState INT = ERROR_STATE()
+	RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+END CATCH
+GO
+
+/* START Scripts for changes of views, procedures, functions, which cannot be in transactions */	
+/* IMPORTANT: Every SQL view or stored procedure must start with GO and end with GO and does not need to have left tab. E.g.:
+GO
+ALTER VIEW VIEW_SAMPLE
+SELECT ....
+GO
+*/
+
+GO
+
+/* ... */
+
+GO
+/* FIN Scripts for changes of views, procedures, functions, which cannot be in transactions */	
+
+GO
+SET XACT_ABORT ON
+BEGIN TRY
+	BEGIN TRANSACTION 
+
+	/* START Data scripts: insert, update, deleted */
+
+	PRINT N'Clear access log';
+	DELETE FROM AccessLog
+
+	-- Create users
+	PRINT N'Creating root user';
+	IF NOT EXISTS(SELECT NULL FROM Users WHERE Id = '00000000-0000-0000-0000-000000000000')
+		INSERT INTO Users (Id, Login, Password, Active, cUser, cDate, mUser, mDate) VALUES ('00000000-0000-0000-0000-000000000000', 'root', 'root', 1, '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Users SET Login = 'root', Password = 'root', Active = 1, mUser = null, mDate = null WHERE Id = '00000000-0000-0000-0000-000000000000'
+
+	-- Create profiles
+	PRINT N'Creating Administrator profile';
+	IF NOT EXISTS(SELECT NULL FROM Profiles WHERE Id = '00000000-0000-0000-0000-000000000000')
+		INSERT INTO Profiles (Id, Code, Name, Active, cUser, cDate, mUser, mDate) VALUES ('00000000-0000-0000-0000-000000000000', 'Admin', 'Administrator', 1, '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Profiles SET Code = 'Admin', Name = 'Administrator', Active = 1, mUser = null, mDate = null WHERE Id = '00000000-0000-0000-0000-000000000000'
+
+	PRINT N'Creating Reader profile';
+	IF NOT EXISTS(SELECT NULL FROM Profiles WHERE Id = 'FC935363-7260-47EF-A80F-3E98F79A0025')
+		INSERT INTO Profiles (Id, Code, Name, Active, cUser, cDate, mUser, mDate) VALUES ('FC935363-7260-47EF-A80F-3E98F79A0025', 'Read', 'Reader', 1, '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Profiles SET Code = 'Read', Name = 'Reader', Active = 1, mUser = null, mDate = null WHERE Id = 'FC935363-7260-47EF-A80F-3E98F79A0025'
+
+	-- Create Modules
+	PRINT N'Creating modules';
+	IF NOT EXISTS(SELECT NULL FROM Modules WHERE Id = 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1')
+		INSERT INTO Modules (Id, Code, Name, Active, cUser, cDate, mUser, mDate) VALUES ('D6B70B8F-545A-4E16-B206-0C742CBE7DA1', 'DOC', 'Documentation', 1, 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1', '20000101', null, null)
+	ELSE
+		UPDATE Modules SET Code = 'DOC', Name = 'Documentation', Active = 1, mUser = null, mDate = null WHERE Id = 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1'
+	IF NOT EXISTS(SELECT NULL FROM Modules WHERE Id = 'B5DF8F03-9F98-4A30-8E77-3305D705C4F2')
+		INSERT INTO Modules (Id, Code, Name, Active, cUser, cDate, mUser, mDate) VALUES ('B5DF8F03-9F98-4A30-8E77-3305D705C4F2', 'PRO', 'Provisioning', 1, 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1', '20000101', null, null)
+	ELSE
+		UPDATE Modules SET Code = 'PRO', Name = 'Provisioning', Active = 1, mUser = null, mDate = null WHERE Id = 'B5DF8F03-9F98-4A30-8E77-3305D705C4F2'
+	IF NOT EXISTS(SELECT NULL FROM Modules WHERE Id = 'B34447D6-B67D-440B-8FBC-49050BCA616A')
+		INSERT INTO Modules (Id, Code, Name, Active, cUser, cDate, mUser, mDate) VALUES ('B34447D6-B67D-440B-8FBC-49050BCA616A', 'CON', 'Configuration', 1, 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1', '20000101', null, null)
+	ELSE
+		UPDATE Modules SET Code = 'CON', Name = 'Configuration', Active = 1, mUser = null, mDate = null WHERE Id = 'B34447D6-B67D-440B-8FBC-49050BCA616A'
+	IF NOT EXISTS(SELECT NULL FROM Modules WHERE Id = 'E9F69DEA-7A32-4915-98DD-69A841EEF46B')
+		INSERT INTO Modules (Id, Code, Name, Active, cUser, cDate, mUser, mDate) VALUES ('E9F69DEA-7A32-4915-98DD-69A841EEF46B', 'MNT', 'Maintenance', 1, 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1', '20000101', null, null)
+	ELSE
+		UPDATE Modules SET Code = 'MNT', Name = 'Maintenance', Active = 1, mUser = null, mDate = null WHERE Id = 'E9F69DEA-7A32-4915-98DD-69A841EEF46B'
+	IF NOT EXISTS(SELECT NULL FROM Modules WHERE Id = 'CE766A9E-1F33-4A54-8AC9-7335AC9408EC')
+		INSERT INTO Modules (Id, Code, Name, Active, cUser, cDate, mUser, mDate) VALUES ('CE766A9E-1F33-4A54-8AC9-7335AC9408EC', 'REP', 'Reports', 1, 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1', '20000101', null, null)
+	ELSE
+		UPDATE Modules SET Code = 'REP', Name = 'Reports', Active = 1, mUser = null, mDate = null WHERE Id = 'CE766A9E-1F33-4A54-8AC9-7335AC9408EC'
+	IF NOT EXISTS(SELECT NULL FROM Modules WHERE Id = 'A0198BB4-4FAA-4CDA-A894-DE1E731B6DF0')
+		INSERT INTO Modules (Id, Code, Name, Active, cUser, cDate, mUser, mDate) VALUES ('A0198BB4-4FAA-4CDA-A894-DE1E731B6DF0', 'SEC', 'Security', 1, 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1', '20000101', null, null)
+	ELSE
+		UPDATE Modules SET Code = 'SEC', Name = 'Security', Active = 1, mUser = null, mDate = null WHERE Id = 'A0198BB4-4FAA-4CDA-A894-DE1E731B6DF0'
+	IF NOT EXISTS(SELECT NULL FROM Modules WHERE Id = '4FE69187-7A34-4806-A11C-E490FEB239C2')
+		INSERT INTO Modules (Id, Code, Name, Active, cUser, cDate, mUser, mDate) VALUES ('4FE69187-7A34-4806-A11C-E490FEB239C2', 'SUP', 'Support', 1, 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1', '20000101', null, null)
+	ELSE
+		UPDATE Modules SET Code = 'SUP', Name = 'Support', Active = 1, mUser = null, mDate = null WHERE Id = '4FE69187-7A34-4806-A11C-E490FEB239C2'
+	IF NOT EXISTS(SELECT NULL FROM Modules WHERE Id = '1F5FB8C7-7BC6-427A-A79D-AB2BE7CBDAF4')
+		INSERT INTO Modules (Id, Code, Name, Active, cUser, cDate, mUser, mDate) VALUES ('1F5FB8C7-7BC6-427A-A79D-AB2BE7CBDAF4', 'SET', 'Settings', 1, 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1', '20000101', null, null)
+	ELSE
+		UPDATE Modules SET Code = 'SET', Name = 'Settings', Active = 1, mUser = null, mDate = null WHERE Id = '1F5FB8C7-7BC6-427A-A79D-AB2BE7CBDAF4'
+
+	-- Associate root user with Administrator profile
+	IF NOT EXISTS(SELECT NULL FROM UserProfiles WHERE IdUser = '00000000-0000-0000-0000-000000000000' AND IdProfile = '00000000-0000-0000-0000-000000000000')
+		INSERT INTO UserProfiles (IdUser, IdProfile) VALUES ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000')
+
+	-- Associate Administrator profile with all modules
+	IF NOT EXISTS(SELECT NULL FROM ProfileModules WHERE IdProfile = '00000000-0000-0000-0000-000000000000' AND IdModule = 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1')
+		INSERT INTO ProfileModules (IdProfile, IdModule) VALUES ('00000000-0000-0000-0000-000000000000', 'D6B70B8F-545A-4E16-B206-0C742CBE7DA1')
+	IF NOT EXISTS(SELECT NULL FROM ProfileModules WHERE IdProfile = '00000000-0000-0000-0000-000000000000' AND IdModule = 'B5DF8F03-9F98-4A30-8E77-3305D705C4F2')
+		INSERT INTO ProfileModules (IdProfile, IdModule) VALUES ('00000000-0000-0000-0000-000000000000', 'B5DF8F03-9F98-4A30-8E77-3305D705C4F2')
+	IF NOT EXISTS(SELECT NULL FROM ProfileModules WHERE IdProfile = '00000000-0000-0000-0000-000000000000' AND IdModule = 'B34447D6-B67D-440B-8FBC-49050BCA616A')
+		INSERT INTO ProfileModules (IdProfile, IdModule) VALUES ('00000000-0000-0000-0000-000000000000', 'B34447D6-B67D-440B-8FBC-49050BCA616A')
+	IF NOT EXISTS(SELECT NULL FROM ProfileModules WHERE IdProfile = '00000000-0000-0000-0000-000000000000' AND IdModule = 'E9F69DEA-7A32-4915-98DD-69A841EEF46B')
+		INSERT INTO ProfileModules (IdProfile, IdModule) VALUES ('00000000-0000-0000-0000-000000000000', 'E9F69DEA-7A32-4915-98DD-69A841EEF46B')
+	IF NOT EXISTS(SELECT NULL FROM ProfileModules WHERE IdProfile = '00000000-0000-0000-0000-000000000000' AND IdModule = 'CE766A9E-1F33-4A54-8AC9-7335AC9408EC')
+		INSERT INTO ProfileModules (IdProfile, IdModule) VALUES ('00000000-0000-0000-0000-000000000000', 'CE766A9E-1F33-4A54-8AC9-7335AC9408EC')
+	IF NOT EXISTS(SELECT NULL FROM ProfileModules WHERE IdProfile = '00000000-0000-0000-0000-000000000000' AND IdModule = 'CE766A9E-1F33-4A54-8AC9-7335AC9408EC')
+		INSERT INTO ProfileModules (IdProfile, IdModule) VALUES ('00000000-0000-0000-0000-000000000000', 'CE766A9E-1F33-4A54-8AC9-7335AC9408EC')
+	IF NOT EXISTS(SELECT NULL FROM ProfileModules WHERE IdProfile = '00000000-0000-0000-0000-000000000000' AND IdModule = '4FE69187-7A34-4806-A11C-E490FEB239C2')
+		INSERT INTO ProfileModules (IdProfile, IdModule) VALUES ('00000000-0000-0000-0000-000000000000', '4FE69187-7A34-4806-A11C-E490FEB239C2')
+	IF NOT EXISTS(SELECT NULL FROM ProfileModules WHERE IdProfile = '00000000-0000-0000-0000-000000000000' AND IdModule = '1F5FB8C7-7BC6-427A-A79D-AB2BE7CBDAF4')
+		INSERT INTO ProfileModules (IdProfile, IdModule) VALUES ('00000000-0000-0000-0000-000000000000', '1F5FB8C7-7BC6-427A-A79D-AB2BE7CBDAF4')
+
+	-- Create units
+	PRINT N'Creating units';
+	IF NOT EXISTS(SELECT NULL FROM Units WHERE Id = 'A8AB430F-47F6-43AC-A9C5-1330EC25DE09')
+		INSERT INTO Units (Id, IdParent, TackMark, Name, Active) VALUES ('A8AB430F-47F6-43AC-A9C5-1330EC25DE09', null, 'RIYADH', 'Main Base Riyadh', 1)
+	IF NOT EXISTS(SELECT NULL FROM Units WHERE Id = 'C27820D5-3EBD-4886-B709-E4D431AC6D79')
+		INSERT INTO Units (Id, IdParent, TackMark, Name, Active) VALUES ('C27820D5-3EBD-4886-B709-E4D431AC6D79', 'A8AB430F-47F6-43AC-A9C5-1330EC25DE09', 'JEDDAH', 'Corvette Base Yeddah', 1)
+	IF NOT EXISTS(SELECT NULL FROM Units WHERE Id = 'b956ce01-3fe1-4b87-afcf-1853804ea4f79')
+		INSERT INTO Units (Id, IdParent, TackMark, Name, Active) VALUES ('b956ce01-3fe1-4b87-afcf-1853804ea4f7', 'C27820D5-3EBD-4886-B709-E4D431AC6D79', 'FSG828', 'HMS "ALJUBAIL"', 1)
+	IF NOT EXISTS(SELECT NULL FROM Units WHERE Id = 'fc375c03-55bb-4a5d-9665-e7ff4271d8fc')
+		INSERT INTO Units (Id, IdParent, TackMark, Name, Active) VALUES ('fc375c03-55bb-4a5d-9665-e7ff4271d8fc', 'C27820D5-3EBD-4886-B709-E4D431AC6D79', 'FSG830', 'HMS "ALDIRIYAH"', 1)
+	IF NOT EXISTS(SELECT NULL FROM Units WHERE Id = '31c510cd-f9c6-4203-9a65-ac81df00f8e7')
+		INSERT INTO Units (Id, IdParent, TackMark, Name, Active) VALUES ('31c510cd-f9c6-4203-9a65-ac81df00f8e7', 'C27820D5-3EBD-4886-B709-E4D431AC6D79', 'FSG832', 'HMS "HAIL"', 1)
+	IF NOT EXISTS(SELECT NULL FROM Units WHERE Id = '05be412b-3eb9-4318-9b29-5360c96bd3b9')
+		INSERT INTO Units (Id, IdParent, TackMark, Name, Active) VALUES ('05be412b-3eb9-4318-9b29-5360c96bd3b9', 'C27820D5-3EBD-4886-B709-E4D431AC6D79', 'FSG834', 'HMS "JAZAN"', 1)
+	IF NOT EXISTS(SELECT NULL FROM Units WHERE Id = '3b8a6779-369a-4095-9597-b31fc72c00f6')
+		INSERT INTO Units (Id, IdParent, TackMark, Name, Active) VALUES ('3b8a6779-369a-4095-9597-b31fc72c00f6', 'C27820D5-3EBD-4886-B709-E4D431AC6D79', 'FSG836', 'HMS "UNAYZAH"', 1)
+
+	-- Associate root user to all units
+	IF NOT EXISTS(SELECT NULL FROM UserUnits WHERE IdUser = '00000000-0000-0000-0000-000000000000' AND IdUnit = 'A8AB430F-47F6-43AC-A9C5-1330EC25DE09')
+		INSERT INTO UserUnits (IdUser, IdUnit) VALUES ('00000000-0000-0000-0000-000000000000', 'A8AB430F-47F6-43AC-A9C5-1330EC25DE09')
+	IF NOT EXISTS(SELECT NULL FROM UserUnits WHERE IdUser = '00000000-0000-0000-0000-000000000000' AND IdUnit = 'C27820D5-3EBD-4886-B709-E4D431AC6D79')
+		INSERT INTO UserUnits (IdUser, IdUnit) VALUES ('00000000-0000-0000-0000-000000000000', 'C27820D5-3EBD-4886-B709-E4D431AC6D79')
+	IF NOT EXISTS(SELECT NULL FROM UserUnits WHERE IdUser = '00000000-0000-0000-0000-000000000000' AND IdUnit = 'B956CE01-3FE1-4B87-AFCF-1853804EA4F7')
+		INSERT INTO UserUnits (IdUser, IdUnit) VALUES ('00000000-0000-0000-0000-000000000000', 'B956CE01-3FE1-4B87-AFCF-1853804EA4F7')
+	IF NOT EXISTS(SELECT NULL FROM UserUnits WHERE IdUser = '00000000-0000-0000-0000-000000000000' AND IdUnit = 'FC375C03-55BB-4A5D-9665-E7FF4271D8FC')
+		INSERT INTO UserUnits (IdUser, IdUnit) VALUES ('00000000-0000-0000-0000-000000000000', 'FC375C03-55BB-4A5D-9665-E7FF4271D8FC')
+	IF NOT EXISTS(SELECT NULL FROM UserUnits WHERE IdUser = '00000000-0000-0000-0000-000000000000' AND IdUnit = '31C510CD-F9C6-4203-9A65-AC81DF00F8E7')
+		INSERT INTO UserUnits (IdUser, IdUnit) VALUES ('00000000-0000-0000-0000-000000000000', '31C510CD-F9C6-4203-9A65-AC81DF00F8E7')
+	IF NOT EXISTS(SELECT NULL FROM UserUnits WHERE IdUser = '00000000-0000-0000-0000-000000000000' AND IdUnit = '05BE412B-3EB9-4318-9B29-5360C96BD3B9')
+		INSERT INTO UserUnits (IdUser, IdUnit) VALUES ('00000000-0000-0000-0000-000000000000', '05BE412B-3EB9-4318-9B29-5360C96BD3B9')
+	IF NOT EXISTS(SELECT NULL FROM UserUnits WHERE IdUser = '00000000-0000-0000-0000-000000000000' AND IdUnit = '3B8A6779-369A-4095-9597-B31FC72C00F6')
+		INSERT INTO UserUnits (IdUser, IdUnit) VALUES ('00000000-0000-0000-0000-000000000000', '3B8A6779-369A-4095-9597-B31FC72C00F6')
+
+	-- Create Operations groups and operations for support module
+	PRINT N'Creating operation groups for support module';
+	IF NOT EXISTS(SELECT NULL FROM OperationGroups WHERE Id = '2bb47166-a86a-4bd8-ac0b-bdccb7d7013d')
+		INSERT INTO OperationGroups (Id, IdModule, Description, cUser, cDate, mUser, mDate) VALUES ('2bb47166-a86a-4bd8-ac0b-bdccb7d7013d', '4FE69187-7A34-4806-A11C-E490FEB239C2', 'Units', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE OperationGroups set IdModule = '4FE69187-7A34-4806-A11C-E490FEB239C2', Description = 'Units' WHERE Id = '2bb47166-a86a-4bd8-ac0b-bdccb7d7013d'
+
+	IF NOT EXISTS(SELECT NULL FROM Operations WHERE Id = '87F1FC66-FF76-412C-9229-F86F5E3C0F16')
+		INSERT INTO Operations (Id, IdOperationGroup, Code, Description, cUser, cDate, mUser, mDate) VALUES ('87F1FC66-FF76-412C-9229-F86F5E3C0F16', '2BB47166-A86A-4BD8-AC0B-BDCCB7D7013D', 'UNT00', 'Unit creation', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Operations SET IdOperationGroup = '2BB47166-A86A-4BD8-AC0B-BDCCB7D7013D', Code = 'UNT00', Description = 'Unit creation' WHERE Id = '87F1FC66-FF76-412C-9229-F86F5E3C0F16'
+	IF NOT EXISTS(SELECT NULL FROM Operations WHERE Id = '2CF333B8-B6BF-433D-B749-555A020D31A8')
+		INSERT INTO Operations (Id, IdOperationGroup, Code, Description, cUser, cDate, mUser, mDate) VALUES ('2CF333B8-B6BF-433D-B749-555A020D31A8', '2BB47166-A86A-4BD8-AC0B-BDCCB7D7013D', 'UNT01', 'Unit read', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Operations SET IdOperationGroup = '2BB47166-A86A-4BD8-AC0B-BDCCB7D7013D', Code = 'UNT01', Description = 'Unit read' WHERE Id = '2CF333B8-B6BF-433D-B749-555A020D31A8'
+	IF NOT EXISTS(SELECT NULL FROM Operations WHERE Id = 'CCBB6957-3E40-42B1-8DCE-1204B6369AB4')
+		INSERT INTO Operations (Id, IdOperationGroup, Code, Description, cUser, cDate, mUser, mDate) VALUES ('CCBB6957-3E40-42B1-8DCE-1204B6369AB4', '2BB47166-A86A-4BD8-AC0B-BDCCB7D7013D', 'UNT02', 'Unit edit', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Operations SET IdOperationGroup = '2BB47166-A86A-4BD8-AC0B-BDCCB7D7013D', Code = 'UNT02', Description = 'Unit edit' WHERE Id = 'CCBB6957-3E40-42B1-8DCE-1204B6369AB4'
+	IF NOT EXISTS(SELECT NULL FROM Operations WHERE Id = '059ED490-22F6-406D-8EDA-FB61B2DD44DA')
+		INSERT INTO Operations (Id, IdOperationGroup, Code, Description, cUser, cDate, mUser, mDate) VALUES ('059ED490-22F6-406D-8EDA-FB61B2DD44DA', '2BB47166-A86A-4BD8-AC0B-BDCCB7D7013D', 'UNT03', 'Unit delete', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Operations SET IdOperationGroup = '2BB47166-A86A-4BD8-AC0B-BDCCB7D7013D', Code = 'UNT03', Description = 'Unit delete' WHERE Id = '059ED490-22F6-406D-8EDA-FB61B2DD44DA'
+
+	-- Create Operations groups and operations for settings module
+	PRINT N'Creating operation groups for settings module';
+	IF NOT EXISTS(SELECT NULL FROM OperationGroups WHERE Id = '4f0d7fc3-45ef-44e2-8ece-37eb18368135')
+		INSERT INTO OperationGroups (Id, IdModule, Description, cUser, cDate, mUser, mDate) VALUES ('4f0d7fc3-45ef-44e2-8ece-37eb18368135', '1F5FB8C7-7BC6-427A-A79D-AB2BE7CBDAF4', 'Settings', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE OperationGroups set IdModule = '1F5FB8C7-7BC6-427A-A79D-AB2BE7CBDAF4', Description = 'Settings' WHERE Id = '4f0d7fc3-45ef-44e2-8ece-37eb18368135'
+
+	IF NOT EXISTS(SELECT NULL FROM Operations WHERE Id = '9a3c31f8-ab2d-4926-afaa-16b1f592c2a0')
+		INSERT INTO Operations (Id, IdOperationGroup, Code, Description, cUser, cDate, mUser, mDate) VALUES ('9a3c31f8-ab2d-4926-afaa-16b1f592c2a0', '4f0d7fc3-45ef-44e2-8ece-37eb18368135', 'UNT03', 'Unit delete', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Operations SET IdOperationGroup = '4f0d7fc3-45ef-44e2-8ece-37eb18368135', Code = 'SET00', Description = 'Settings read' WHERE Id = '9a3c31f8-ab2d-4926-afaa-16b1f592c2a0'
+	IF NOT EXISTS(SELECT NULL FROM Operations WHERE Id = '89b8c35d-0cb1-490a-93e7-1f19aae999b1')
+		INSERT INTO Operations (Id, IdOperationGroup, Code, Description, cUser, cDate, mUser, mDate) VALUES ('89b8c35d-0cb1-490a-93e7-1f19aae999b1', '4f0d7fc3-45ef-44e2-8ece-37eb18368135', 'UNT03', 'Unit delete', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Operations SET IdOperationGroup = '4f0d7fc3-45ef-44e2-8ece-37eb18368135', Code = 'SET01', Description = 'Settings edit' WHERE Id = '89b8c35d-0cb1-490a-93e7-1f19aae999b1'
+
+	-- Create Operations groups and operations for provisioning module
+	PRINT N'Creating operation groups for provisioning module';
+	IF NOT EXISTS(SELECT NULL FROM OperationGroups WHERE Id = '7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef')
+		INSERT INTO OperationGroups (Id, IdModule, Description, cUser, cDate, mUser, mDate) VALUES ('7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef', 'B34447D6-B67D-440B-8FBC-49050BCA616A', 'Materials', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE OperationGroups set IdModule = 'B34447D6-B67D-440B-8FBC-49050BCA616A', Description = 'Provisioning' WHERE Id = '7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef'
+
+	IF NOT EXISTS(SELECT NULL FROM Operations WHERE Id = '2cb075f0-1c31-498b-9e2f-ab4cae051254')
+		INSERT INTO Operations (Id, IdOperationGroup, Code, Description, cUser, cDate, mUser, mDate) VALUES ('2cb075f0-1c31-498b-9e2f-ab4cae051254', '7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef', 'MNT00', 'Material creation', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Operations SET IdOperationGroup = '7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef', Code = 'MNT00', Description = 'Material creation' WHERE Id = '2cb075f0-1c31-498b-9e2f-ab4cae051254'
+	IF NOT EXISTS(SELECT NULL FROM Operations WHERE Id = '9eb6b7fd-d24a-4784-a2cf-33bf1d2a8222')
+		INSERT INTO Operations (Id, IdOperationGroup, Code, Description, cUser, cDate, mUser, mDate) VALUES ('9eb6b7fd-d24a-4784-a2cf-33bf1d2a8222', '7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef', 'MNT01', 'Material read', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Operations SET IdOperationGroup = '7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef', Code = 'MNT01', Description = 'Material read' WHERE Id = '9eb6b7fd-d24a-4784-a2cf-33bf1d2a8222'
+	IF NOT EXISTS(SELECT NULL FROM Operations WHERE Id = 'abdbdbae-6f17-4a2a-83ff-6e3c82bbac16')
+		INSERT INTO Operations (Id, IdOperationGroup, Code, Description, cUser, cDate, mUser, mDate) VALUES ('abdbdbae-6f17-4a2a-83ff-6e3c82bbac16', '7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef', 'MNT02', 'Material edit', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Operations SET IdOperationGroup = '7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef', Code = 'MNT02', Description = 'Material edit' WHERE Id = 'abdbdbae-6f17-4a2a-83ff-6e3c82bbac16'
+	IF NOT EXISTS(SELECT NULL FROM Operations WHERE Id = '82c45820-2f1c-4770-8030-42bf13531665')
+		INSERT INTO Operations (Id, IdOperationGroup, Code, Description, cUser, cDate, mUser, mDate) VALUES ('82c45820-2f1c-4770-8030-42bf13531665', '7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef', 'MNT03', 'Material delete', '00000000-0000-0000-0000-000000000000', '20000101', null, null)
+	ELSE
+		UPDATE Operations SET IdOperationGroup = '7d11f19a-ad8f-4e65-9939-1dfb97d0b2ef', Code = 'MNT03', Description = 'Material delete' WHERE Id = '82c45820-2f1c-4770-8030-42bf13531665'
+
+	COMMIT TRANSACTION 
+
+	PRINT N'Nostromo actualizado correctamente.';
+	
+END TRY
+BEGIN CATCH
+	IF @@TRANCOUNT > 0
+		ROLLBACK TRANSACTION 
+
+	DECLARE @ErrorMessage2 NVARCHAR(4000) = ERROR_MESSAGE()
+	DECLARE @ErrorSeverity2 INT = ERROR_SEVERITY()
+	DECLARE @ErrorState2 INT = ERROR_STATE()
+	PRINT ERROR_LINE();
+	RAISERROR (@ErrorMessage2, @ErrorSeverity2, @ErrorState2);
+
+END CATCH
